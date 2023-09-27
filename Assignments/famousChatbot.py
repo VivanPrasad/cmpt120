@@ -4,7 +4,12 @@
 #
 # Author: M. Vivan Prasad
 #
-# Date: Monday September 18th, 2023
+# Date Created: Monday September 18th, 2023
+# Last Updated: Wednesday September 27th, 2023
+
+#Criteria
+#whether your program executes (e.g., does it contain any errors) (5 points)
+#whether your program solves the problem (5 points).
 
 import random, time, math
 
