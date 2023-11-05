@@ -1,4 +1,4 @@
-# MyMarioGame.py
+# MyMarioGame_A4.py
 # 
 # Description: Set up the Mario game by reading data from the input data file
 #              and using this data to initialize variables, then create and
@@ -11,8 +11,6 @@
 # Credit: Incomplete MyMarioGame_A4.py by AL
 # Date Created: Nov. 5 2023
 # Date Updated:
-
-import os
 
 # -------------------------------------------------------------------
 
@@ -155,15 +153,16 @@ print("""Welcome to my Mario game.\n""")
 filename = input("Please, enter a filename: ")
 
 # Open file for reading
-file = os.open(filename)
-os.read(filename) # Put your code here!
-print(filename)
+file = open(filename,"r")
+file_data = file.readlines() # Put your code here!
+print(file_data)
 
 
 # Read the content of the file, one line at a time, and and initialize 
 # the following variables in the order these variables are listed
 # mazeWidth, mazeHeight, aNumOfTreasures, aNumOfBombs must be assigned
 # an integer value
+"""
 mazeWidth = # Put your code here!
 mazeHeight = # Put your code here!
 aNumOfTreasures = # Put your code here!
@@ -176,7 +175,7 @@ mario = # Put your code here!
 # (of type "str") representing the coordinates x and y of Mario's
 # location in the maze. For example: ['0', '0']
 marioLocationList = # Put your code here!
-
+"""
 
 
 # obstacleLocationDict must be a dictionary with items formatted as
@@ -189,8 +188,9 @@ obstacleLocationDict = {}
 
 
 # bombScoreRatio must be assigned an integer value
+"""
 bombScoreRatio = # Put your code here!
-
+"""
 
 # For testing and debugging purposes
 ##print(f"mazeWidth = {mazeWidth}")
@@ -209,13 +209,15 @@ bombScoreRatio = # Put your code here!
 
 # Create a maze
 theMaze = list()
+"""
 theMaze = # Put your code here!
-
+"""
 # Create the top and bottom boundaries of the maze
 # These boundaries are not part of the maze
 hBoundary = list()
+"""
 hBoundary = # Put your code here!
-
+"""
 # Place the character (string) "obstacle" in the maze
 # This is how we hide the treasures and bombs from the player
 # Put your code here!
