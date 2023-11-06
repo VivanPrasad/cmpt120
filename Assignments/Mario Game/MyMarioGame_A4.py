@@ -4,17 +4,18 @@
 #              and using this data to initialize variables, then create and
 #              display the maze in which Mario is to move.
 #
-# Please, read Readings 12.1 to 12.5 (inclusively) as well as 
-# 11.1 to 11.5 (inclusively). Also, read about Python lists of lists.
+# Author: Anne Lavergne, Mahir Vivan Prasad
 #
-# Author: AL + MVP
-# Credit: Incomplete MyMarioGame_A4.py by AL
-# Date Created: Nov. 5 2023
-# Date Updated:
+# Date Created: Sunday Nov. 5 2023
+# Date Updated: Sunday Nov. 5 2023
+
+# DISCLAIMER: I type hinted parameters of the premade functions
+# Type hinting makes it much more easier to find errors!
 
 # -------------------------------------------------------------------
 
-def createMaze(aMaze, aWidth, aHeight, aCell):
+def createMaze(aMaze : list[list[str]], 
+        aWidth:int, aHeight:int, aCell:str) -> list[list[str]]:
     ''' Create and return "aMaze" of "aWidth" by "aHeight".
         Each cell of the maze is a string set to "aCell".      
     '''
@@ -25,7 +26,7 @@ def createMaze(aMaze, aWidth, aHeight, aCell):
 # -------------------------------------------------------------------
 
 # Print Maze - This function is to used for testing and debugging purposes only!
-def printMaze(aMaze, aHeight):
+def printMaze(aMaze:list[list[str]], aHeight:int) -> None:
     ''' Print "aMaze" of "aHeight" - for testing and debugging purposes.
     ''' 
     for row in range(aHeight):
@@ -34,7 +35,7 @@ def printMaze(aMaze, aHeight):
 		
 # -------------------------------------------------------------------
 
-def createBoundaryList(aWidth, bH = "---"):
+def createBoundaryList(aWidth:int, bH = "---") -> list[list[str]]:
     ''' Create and return a list that contains 2 lists: the first list
         is the top boundary of the maze and contains a string set to "bH".
         The second list is the bottom boundary of the maze and it also
@@ -46,9 +47,10 @@ def createBoundaryList(aWidth, bH = "---"):
     return list([[(bH) for number in range(aWidth)],
                  [(bH) for number in range(aWidth)]])                
 
-# -------------------------------------------------------------------
+# -------------------------- Maze Display ---------------------------
 
-def displayMaze(aMaze, aWidth, aHeight, hBoundary, bS = "|" ):
+def displayMaze(aMaze:list[list[str]],
+        aWidth:int,aHeight:int,hBoundary:list[list[str]], bS:str = "|"):
     ''' Display "aMaze" with column numbers at the top and row numbers
         to the left of each row along with the top and the bottom boundaries
         "hBoundary" that surround the maze.
@@ -91,10 +93,11 @@ def displayMaze(aMaze, aWidth, aHeight, hBoundary, bS = "|" ):
     
     return
 
-# -------------------------------------------------------------------
+# ---------------------- Placement Functions ------------------------
 
-def placeExitGate(aWidth, aHeight, rowMario, columnMario, hBoundary,
-                  exitGate = " = "):
+def placeExitGate(aWidth:int, aHeight:int, rowMario:int, columnMario:int, 
+        hBoundary:list[list[str]], exitGate:str = " = "):
+    global exitGateLocationList
     ''' Place the "exitGate" at the opposite corner of Mario's location.
 	In other words, place the "exitGate" either in the top boundary or 
 	in the bottom boundary whichever is at the opposite corner of
@@ -138,106 +141,259 @@ def placeExitGate(aWidth, aHeight, rowMario, columnMario, hBoundary,
         del hBoundary[0][exitGateLocationList[1]]
         hBoundary[0].insert(exitGateLocationList[1], exitGate)       
 
-    # Can return a tuple -> elements sepatared by a coma
-    return hBoundary, exitGateLocationList  
+    return exitGateLocationList  
 
+def placeObstacles(obstacleLocations):
+    ''' Place obstacles into the maze
+    '''
+    for coordinate in obstacleLocations.keys():
+        columnObstacle, rowObstacle = coordinate
+        theMaze[columnObstacle][rowObstacle] = obstacle
+
+def placeMario(posMario):
+    ''' Place the Mario in the maze at his location.
+	Mario's location at coordinates ("columnMario","rowMario").
+    '''
+    columnMario,rowMario = posMario
+    theMaze[columnMario][rowMario] = mario
+
+# ------------------------- Get File Data ---------------------------
+
+def get_file_data(filename) -> list[str]:
+    '''Opens and reads the file. 
+    Returns a list of strings.
+    '''
+
+    # Open file for reading
+    file = open(filename,"r")
+    # Gets the original text from the file
+    file_raw_data = file.readlines()
+    data = []
+    for element in file_raw_data:
+        if not element.strip().isnumeric(): # If contains symbols
+            # Just remove the \n, NOT the spaces
+            data.append(element.removesuffix("\n"))
+        else:
+            # If contains numbers, strip \n
+            data.append(element.strip())
+    # Close file
+    file.close()
+    return data
+
+# ------------------------ Position Functions -----------------------
+
+def get_position(coordinate : str) -> list[int]:
+    '''Converts 'y x' to ['y','x'].
+    Returns a list with 2 integers for column, row
+    '''
+    y,x = [int(a) for a in coordinate.split(" ")]
+    return [int(y),int(x)]
+
+def get_obstacle_locations():
+    '''Adds all locations of treasures and bombs to obstacleLocationDict
+    '''
+    global file_data, obstacleLocationDict
+    for line in range(8,53):
+        obstacle_pos : list[int] = get_position(file_data[line])
+        if line < 23: #If treasure
+            obstacleLocationDict[tuple(obstacle_pos)] = 1
+        else: #If bomb
+            obstacleLocationDict[tuple(obstacle_pos)] = -1
+    return
+
+# --------------- Initialize Variables with No Data -----------------
+
+mazeWidth : int = 0
+mazeHeight : int = 0
+aNumOfTreasures : int = 0
+aNumOfBombs : int = 0
+
+emptyCell : str = ""
+obstacle : str = ""
+mario : str = ""
+
+marioLocationList : list[int] = []
+obstacleLocationDict : dict = {}
+
+marioScore : int = 0 #For assignment 5
+bombScoreRatio : int = 0
+
+exitGateLocationList : list[int] = list()
+
+theMaze: list[list[str]] = list()
+hBoundary: list[list[str]] = list()
+
+# ------------------------- Maze Setup ------------------------------
+
+def set_game_data(file_data : list[str]) -> None:
+    '''Set all the variables using the 
+    elements in the file data parameter.
+    '''
+
+    # Get the global variables to set in the function
+    global mazeWidth, mazeHeight, aNumOfTreasures, aNumOfBombs
+    global emptyCell, obstacle, mario
+    global marioLocationList, bombScoreRatio, marioScore
+
+    mazeWidth = int(file_data[0])
+    mazeHeight = int(file_data[1])
+    aNumOfTreasures = int(file_data[2])
+    aNumOfBombs = int(file_data[3])
+
+    emptyCell = file_data[4]
+    obstacle = file_data[5]
+    mario = file_data[6]
+
+    marioLocationList = get_position(file_data[7])
+
+    bombScoreRatio = int(file_data[53])
+    marioScore = aNumOfBombs // bombScoreRatio #For assignment 5
+
+    return
+
+def setup_maze() -> None:
+    '''Sets up the maze with 
+    placements of all objects and mario.
+    '''
+
+    # Get the global variables to set in the function
+    global marioLocationList, bombScoreRatio, exitGateLocationList
+    global theMaze, hBoundary
+
+    # Create a maze and boundary
+    theMaze = createMaze(theMaze,mazeWidth,mazeHeight,emptyCell)
+    hBoundary = createBoundaryList(mazeWidth)
+
+    exitGateLocationList = placeExitGate(mazeWidth, mazeHeight, 
+        marioLocationList[0],marioLocationList[1],hBoundary)
+   
+    #Set all obstacle locations and add them to obstacleLocationDict
+    get_obstacle_locations()
+
+    # Place the character (string) "obstacle" in the maze
+    placeObstacles(obstacleLocationDict)
+
+    # Place Mario in the maze (draws on top of obstacles)
+    placeMario(marioLocationList)
+    
+    return
+# -------------------------------------------------------------------
+#                        MAIN PART OF PROGRAM                       
 # -------------------------------------------------------------------
 
-
-# ***Main part of the program
 
 # Welcome the user and identify the game
 print("""Welcome to my Mario game.\n""")
 
 # Ask user for filename
 filename = input("Please, enter a filename: ")
+# Initialize file_data
+file_data = get_file_data(filename)
 
-# Open file for reading
-file = open(filename,"r")
-file_data = file.readlines() # Put your code here!
-print(file_data)
-
-
-# Read the content of the file, one line at a time, and and initialize 
-# the following variables in the order these variables are listed
-# mazeWidth, mazeHeight, aNumOfTreasures, aNumOfBombs must be assigned
-# an integer value
-"""
-mazeWidth = # Put your code here!
-mazeHeight = # Put your code here!
-aNumOfTreasures = # Put your code here!
-aNumOfBombs = # Put your code here!
-# emptyCell, obstacle, mario must be assigned a string
-emptyCell = # Put your code here!
-obstacle = # Put your code here!
-mario = # Put your code here!
-# marioLocationList must contain a list with two elements
-# (of type "str") representing the coordinates x and y of Mario's
-# location in the maze. For example: ['0', '0']
-marioLocationList = # Put your code here!
-"""
-
-
-# obstacleLocationDict must be a dictionary with items formatted as
-# follows: {(x,y): -1} if there is a bomb in the cell at location x,y 
-# in the maze and {(x,y): 1} if there is a treasure at the location x,y
-# in the maze. If the cell is empty at the location x,y in the maze,
-# this location is not stored in the dictionary obstacleLocationDict
-obstacleLocationDict = {}
-# Put your code here!
-
-
-# bombScoreRatio must be assigned an integer value
-"""
-bombScoreRatio = # Put your code here!
-"""
-
-# For testing and debugging purposes
-##print(f"mazeWidth = {mazeWidth}")
-##print(f"mazeHeight = {mazeHeight}")
-##print(f"aNumOftreasures = {aNumOfTreasures}")
-##print(f"aNumOfBombs = {aNumOfBombs}")
-##print(f"emptyCell = '{emptyCell}'")
-##print(f"obstacle = '{obstacle}'")
-##print(f"mario = '{mario}'")     
-##print(f"marioLocationList = {marioLocationList}")
-##print(f"obstacleLocationDict = {obstacleLocationDict}")
-##print(f"bombScoreRatio = {bombScoreRatio}")
-
-# Close the file
-# Put your code here!
-
-# Create a maze
-theMaze = list()
-"""
-theMaze = # Put your code here!
-"""
-# Create the top and bottom boundaries of the maze
-# These boundaries are not part of the maze
-hBoundary = list()
-"""
-hBoundary = # Put your code here!
-"""
-# Place the character (string) "obstacle" in the maze
-# This is how we hide the treasures and bombs from the player
-# Put your code here!
-
-
-
-# Place Mario in the maze
-# Put your code here!
-
-
-         
-# Call the appropriate function which computes the location of the
-# exit gate and places it in either the top or the bottom boundary
-exitGateLocationList = list()
-# Put your code here!
-
+# Set all the variables and their respective data
+set_game_data(file_data)
+# Sets up the maze size, exit gate, obstacles and mario
+setup_maze()
 
 # Call the appropriate function to display the maze 
-# Put your code here!
+displayMaze(theMaze,mazeWidth,mazeHeight,hBoundary)
+
+'''
+# -------------------------------------------------------------------
+#                       Assignment 5 (Part 2)
+# -------------------------------------------------------------------
+
+# I found an old PDF of the Mario Game assignment.
+# I thought it would be fun to tackle going "ahead"!
+# Based on https://www.sfu.ca/~alavergn/120/Assignments/Assn_2.pdf
+
+# Print out a one-time instruction tutorial 
+# instead of repeatedly asking user
 
 
+# -------------------------------------------------------------------
+
+def moveMario(posMario:list[int],vector:list[int]):
+    global marioLocationList, obstacleLocationDict, theMaze, marioScore
+    y,x,dy,dx = posMario + vector
+    new_position = [y+dy,x+dx]
+    if marioLocationList == exitGateLocationList:
+        if new_position == [-1,0] or new_position == [mazeHeight,mazeWidth-1]:
+            marioLocationList = new_position
+    if (y+dy) < mazeHeight and (x+dx) < mazeWidth and \
+         (x+dx) >= 0 and (y+dy) >= 0:
+        marioLocationList = new_position
+        theMaze[y][x] = emptyCell
+        if theMaze[y+dy][x+dx] == obstacle:
+            marioScore += obstacleLocationDict[tuple(new_position)]
+        theMaze[y+dy][x+dx] = mario
+    
+
+    return
+# -------------------------------------------------------------------
+
+#Prints instructions to show off my ASCII art skills :)
+print(f"""
+║.............How to Play.............║
+┌─────────────────────┬───────────────┐
+│ Objective           │ Controls      │
+├─────────────────────┼───────────────┤
+│ Escape the maze!    │ 'r' -> Right  │
+│ Risk collecting     │ 'l' -> Left   │
+│ treasure.. or bombs!│ 'u' -> Up     │
+│ Reach 0 points...   │ 'd' -> Down   │
+│ and it's game over! │ ('x' to Quit) │
+└─────────────────────┴───────────────┘      
+║........................Tiles.........................║
+┌─────────────────────┬────────────────────────────────┐
+│ Empty ({emptyCell})         │ Obstacle ({obstacle})                 │
+├─────────────────────┼────────────────────────────────┤ 
+│ Can move to. Just a │ Can move to. Contains either   │  
+│ normal ol' tile.    │ treasure (+1pt) or bomb (-1pt) │
+└─────────────────────┴────────────────────────────────┘       
+┌─────────────────────┬────────────────────────────────┐
+│ Mario ({mario})         │ Exit Gate (=)                  │ 
+├─────────────────────┼────────────────────────────────┤
+│ It's you!           │ Reach it to escape the maze!   │
+└─────────────────────┴────────────────────────────────┘
+""")
+
+#Constant movement vectors to apply to mario's position
+moveVectors : dict = {"r":[0,1],"l":[0,-1],"u":[-1,0],"d":[1,0]}
+
+userInput = ""
+while marioScore > 0:
+    #Displays updated maze
+    displayMaze(theMaze,mazeWidth,mazeHeight,hBoundary)
+
+    #Prints Mario's score
+    print(f"\nMario's score -> {marioScore}.\n")
+    
+    
+    #Handles user input to move or exit
+    userInput = input("What will you do?: ").lower().strip()
+    if userInput == "x":
+        break
+    
+    while not userInput in moveVectors.keys():
+        userInput = input("Invalid command. Try again: ").lower().strip()
+    
+    #Handles movement of mario, updated treasure and collision
+    moveMario(marioLocationList, moveVectors[userInput])
+
+    #Reaches gate
+    if marioLocationList == [-1,0] or marioLocationList == [mazeHeight,mazeWidth-1]:
+        break
+
+#Check condition after game has ended (exit, win or lose)
+if userInput == "x":
+    pass
+elif marioScore > 0:
+    print(f"Mario has reached the exit gate\
+with a score of {marioScore}! You win!")
+else:
+    print("Mario's score is now down to 0! You have lost!")
+
+'''
 
 print("\n-------")
