@@ -7,12 +7,13 @@
 # Author: Anne Lavergne, Mahir Vivan Prasad
 #
 # Date Created: Sunday Nov. 5 2023
-# Date Updated: Sunday Nov. 5 2023
+# Date Updated: Friday Nov. 17 2023
 
 # DISCLAIMER: I type hinted parameters of the premade functions
 # Type hinting makes it much more easier to find errors!
 
-# -------------------------------------------------------------------
+
+#-------- Assignment 4 section --------
 
 def createMaze(aMaze : list[list[str]], 
         aWidth:int, aHeight:int, aCell:str) -> list[list[str]]:
@@ -299,64 +300,109 @@ setup_maze()
 displayMaze(theMaze,mazeWidth,mazeHeight,hBoundary)
 
 
-# -------------------------------------------------------------------
+#------ Assignment 5 starts here ------
 
+# Set Mario's score - Done!
+# Setting Marios's score has already been done for you
+# so you do not have to add any code to the following line:
+marioScore = aNumOfBombs // bombScoreRatio
+
+#--- The Algorithm for Assignment 5 starts here ---
+# This is the algorithm of the game engine, expressed as comments.
+
+
+# Moves mario from the given position, posMario
+# by adding a given vector list [y,x]
 def moveMario(posMario:list[int],vector:list[int]):
     global marioLocationList, obstacleLocationDict, theMaze, marioScore
     y,x,dy,dx = posMario + vector
+    # Makes the new position list by adding the y of vector
+    # with the y of posMario, and x of vector with y of posMario
     new_position = [y+dy,x+dx]
+
+    # Checks if the location of mario is at the exitgate
+    # which is [0,0] or [height,width]
+    
     if marioLocationList == exitGateLocationList:
-        if new_position == [-1,0] or new_position == [mazeHeight,mazeWidth-1]:
+        # Mario must move onto the gate position, this checks
+        # if the new position is equal to the actual position of the exit
+        if new_position==[-1,0] or new_position==[mazeHeight,mazeWidth-1]:
             marioLocationList = new_position
+   
+    # This is like a collision check, 
+    # seeing if the new y and new x are within bounds of the maze
     if (y+dy) < mazeHeight and (x+dx) < mazeWidth and \
          (x+dx) >= 0 and (y+dy) >= 0:
+        # Sets mario's new position and creates an 
+        # empty cell in his previous position
         marioLocationList = new_position
         theMaze[y][x] = emptyCell
+        
+        # If mario's new position is an obstacle tile, then
+        # get increment mario's score by the obstacle value
+        # as a bomb is -1 and treasure is 1 point in the dictionary
         if theMaze[y+dy][x+dx] == obstacle:
             marioScore += obstacleLocationDict[tuple(new_position)]
+         
+        # Finally, after all of the prior information has been calculated,
+        # overwrite the current tile with mario!
         theMaze[y+dy][x+dx] = mario
     
 
     return
+
 # -------------------------------------------------------------------
 
-#Constant movement vectors to apply to mario's position
-#[column,row]
+#Constant movement vectors which is added onto mario's position!
+#[row,column], so [0,1] would mario one column +1 to the right!
 moveVectors : dict = {"r":[0,1],"l":[0,-1],"u":[-1,0],"d":[1,0]}
 
+# Set the condition variables for your loop
+
+#The user's input!
 userInput = ""
-while marioScore > 0:
+playing = True
+# As long as the player is playing AND marioScore > 0 AND
+# Mario has not reached the exit gate, loop i.e., play:
+while playing and marioScore > 0 and not (marioLocationList == [-1,0] or \
+     marioLocationList == [mazeHeight,mazeWidth-1]):
     #Displays updated maze
     displayMaze(theMaze,mazeWidth,mazeHeight,hBoundary)
 
     #Prints Mario's score
     print(f"\nMario's score -> {marioScore}.\n")
     
-    
+    #Display instructions to the player and
     #Handles user input to move or exit
-    userInput = input("Move Mario by entering the letter 'r' for right,'l'\
-    for left, 'u' for up and 'd' for down,\
-    'x' to exit the game: ").lower().strip()
+    userInput = input("Move Mario by entering the \
+letter 'r' for right, 'l' for left, 'u' for up \
+and 'd' for down, 'x' to exit the game: ").lower().strip()
+    
+    # If the player has entered 'x', then stop the game.
     if userInput == "x":
+        playing = False
         break
     
+    #If the input is not "x", or in the vectors, try again..
     while not userInput in moveVectors.keys():
-        userInput = input("Invalid command. Try again: ").lower().strip()
+        userInput = input("Invalid command.\nMove Mario by entering \
+the letter 'r' for right,'l' for left, 'u' for up and 'd' for down, \
+'x' to exit the game:  ").lower().strip()
     
     #Handles movement of mario, updated treasure and collision
+    #
     moveMario(marioLocationList, moveVectors[userInput])
 
-    #Reaches gate
-    if marioLocationList == [-1,0] or marioLocationList == [mazeHeight,mazeWidth-1]:
-        break
-
-#Check condition after game has ended (exit, win or lose)
-if userInput == "x":
-    pass
+#Check condition after game has ended (exited, won or lost)
+if playing == False:
+    pass #nothing happens in the conditions
 elif marioScore > 0:
-    print(f"Mario has reached the exit gate\
-with a score of {marioScore}! You win!")
+    # WOOOO! player has won and reached the exit
+    print(f"Mario has reached the exit gate \
+with a score of {marioScore}! Yay! You win!\n")
 else:
-    print("Mario's score is now down to 0! You have lost!")
+    # Oh no :( player has lost
+    print("Mario's score is now down to 0! Sorry! You have lost!\n")
 
-print("\n-------")
+print("\nBye!")
+print("\n-------!")
